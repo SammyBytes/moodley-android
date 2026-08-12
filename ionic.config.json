@@ -1,0 +1,7 @@
+{
+  "name": "moodley-android",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
