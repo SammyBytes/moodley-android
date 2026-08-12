@@ -13,15 +13,13 @@ type Status = 'waiting' | 'processing' | 'success' | 'error';
 })
 export class HomePage implements OnInit {
   status: Status = 'waiting';
-  message = 'Abrí un enlace de Moodle para iniciar sesión.';
+  message = 'Abre un enlace de Moodle para iniciar sesión.';
 
   ngOnInit() {
-    // Handle deep link when app is already open
     App.addListener('appUrlOpen', (event) => {
       this.handleMoodleyUrl(event.url);
     });
 
-    // Handle deep link when app was opened by the intent
     App.getLaunchUrl().then((result) => {
       if (result?.url) {
         this.handleMoodleyUrl(result.url);
@@ -30,18 +28,32 @@ export class HomePage implements OnInit {
   }
 
   private async handleMoodleyUrl(url: string) {
-    if (!url.startsWith('moodley://')) return;
+    let token: string | null = null;
+
+    // Case 1: moodley://token=BASE64 (custom scheme from Moodle)
+    if (url.startsWith('moodley://')) {
+      const m = url.match(/[?&]?token=([^&]+)/);
+      token = m ? decodeURIComponent(m[1]) : null;
+    }
+    // Case 2: https://worker/mobile-sso/callback?token=BASE64 (Android App Link)
+    else if (url.includes('/mobile-sso/callback')) {
+      try {
+        token = new URL(url).searchParams.get('token');
+      } catch {
+        token = null;
+      }
+    }
+
+    if (!token) {
+      this.status = 'error';
+      this.message = '❌ No se encontró el token en el enlace.';
+      return;
+    }
 
     this.status = 'processing';
-    this.message = 'Procesando autenticación...';
+    this.message = '⏳ Conectando con Moodley...';
 
     try {
-      // Extract token= from moodley://token=BASE64...
-      const tokenMatch = url.match(/[?&]?token=([^&]+)/);
-      if (!tokenMatch) throw new Error('Token no encontrado en la URL');
-
-      const token = decodeURIComponent(tokenMatch[1]);
-
       const response = await fetch(WORKER_CALLBACK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

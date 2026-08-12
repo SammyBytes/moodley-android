@@ -24,11 +24,21 @@
 
             <!-- Handle moodley:// deep links from Moodle SSO (Android 12+ compatible) -->
             <!-- android:exported="true" is required for Android 12+ when intent-filter is present -->
-            <intent-filter>
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="moodley" />
+            </intent-filter>
+
+            <!-- Android App Links: HTTPS deep link for auto-verification (no dialog on Android 12+) -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https"
+                      android:host="moodley-nightly.samuelbeato7.workers.dev"
+                      android:pathPrefix="/mobile-sso/callback" />
             </intent-filter>
 
         </activity>
