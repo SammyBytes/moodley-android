@@ -7,18 +7,21 @@
 <ion-content [fullscreen]="true" class="ion-padding ion-text-center">
 
   <div class="status-container">
-    <img src="assets/icon/favicon.png" alt="Moodley" class="logo" />
+    <div style="font-size:3rem">🎓</div>
 
-    <ion-icon *ngIf="status === 'waiting'" name="log-in-outline" class="status-icon waiting"></ion-icon>
-    <ion-spinner *ngIf="status === 'processing'" name="crescent" color="primary"></ion-spinner>
-    <ion-icon *ngIf="status === 'success'" name="checkmark-circle" class="status-icon success" color="success"></ion-icon>
-    <ion-icon *ngIf="status === 'error'" name="close-circle" class="status-icon error" color="danger"></ion-icon>
+    <ion-spinner *ngIf="status === 'processing'" name="crescent" color="primary" style="width:56px;height:56px"></ion-spinner>
+    <ion-icon *ngIf="status === 'waiting'" name="log-in-outline" class="status-icon" style="color:var(--ion-color-medium)"></ion-icon>
+    <ion-icon *ngIf="status === 'success'" name="checkmark-circle" class="status-icon" color="success"></ion-icon>
+    <ion-icon *ngIf="status === 'error'" name="close-circle" class="status-icon" color="danger"></ion-icon>
 
     <p class="message">{{ message }}</p>
 
-    <ion-note *ngIf="status === 'waiting'" color="medium">
-      Esta app intercepta automáticamente los enlaces <strong>moodley://</strong> de Moodle.
-      No necesitas hacer nada más.
+    <p *ngIf="status === 'success'" style="color:var(--ion-color-medium);font-size:.85rem">
+      Cerrando en {{ countdown }}...
+    </p>
+
+    <ion-note *ngIf="status === 'waiting'" color="medium" style="max-width:280px;display:block;text-align:center;line-height:1.6">
+      Esta app intercepta automáticamente los enlaces <strong>moodlemobile://</strong> de Moodle.
     </ion-note>
   </div>
 

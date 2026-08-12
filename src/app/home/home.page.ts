@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { App } from '@capacitor/app';
 
 const WORKER_CALLBACK_URL = 'https://moodley-nightly.samuelbeato7.workers.dev/mobile-sso/callback';
@@ -14,15 +14,18 @@ type Status = 'waiting' | 'processing' | 'success' | 'error';
 export class HomePage implements OnInit {
   status: Status = 'waiting';
   message = 'Abre un enlace de Moodle para iniciar sesión.';
+  countdown = 0;
+
+  constructor(private zone: NgZone) {}
 
   ngOnInit() {
     App.addListener('appUrlOpen', (event) => {
-      this.handleMoodleyUrl(event.url);
+      this.zone.run(() => this.handleMoodleyUrl(event.url));
     });
 
     App.getLaunchUrl().then((result) => {
       if (result?.url) {
-        this.handleMoodleyUrl(result.url);
+        this.zone.run(() => this.handleMoodleyUrl(result.url));
       }
     });
   }
@@ -30,13 +33,10 @@ export class HomePage implements OnInit {
   private async handleMoodleyUrl(url: string) {
     let token: string | null = null;
 
-    // Case 1: moodley://token=BASE64 (custom scheme from Moodle)
-    if (url.startsWith('moodley://')) {
+    if (url.startsWith('moodlemobile://')) {
       const m = url.match(/[?&]?token=([^&]+)/);
       token = m ? decodeURIComponent(m[1]) : null;
-    }
-    // Case 2: https://worker/mobile-sso/callback?token=BASE64 (Android App Link)
-    else if (url.includes('/mobile-sso/callback')) {
+    } else if (url.includes('/mobile-sso/callback')) {
       try {
         token = new URL(url).searchParams.get('token');
       } catch {
@@ -67,11 +67,23 @@ export class HomePage implements OnInit {
       }
 
       this.status = 'success';
-      this.message = '✅ ¡Sesión iniciada! Vuelve a Telegram.';
+      this.message = '✅ ¡Sesión iniciada!';
+      this.startCountdown();
     } catch (err: unknown) {
       this.status = 'error';
       const msg = err instanceof Error ? err.message : String(err);
       this.message = `❌ Error: ${msg}`;
     }
+  }
+
+  private startCountdown() {
+    this.countdown = 3;
+    const timer = setInterval(() => {
+      this.countdown--;
+      if (this.countdown <= 0) {
+        clearInterval(timer);
+        App.minimizeApp(); // send to background instead of killing it
+      }
+    }, 1000);
   }
 }
