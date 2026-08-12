@@ -1,28 +1,45 @@
-<ion-header [translucent]="true">
-  <ion-toolbar color="primary">
-    <ion-title>Moodley Auth</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content [fullscreen]="true">
+  <div class="wrapper">
 
-<ion-content [fullscreen]="true" class="ion-padding ion-text-center">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">🎓</div>
+      <h1>Moodley Auth</h1>
+      <p class="subtitle">Autenticación automática para UNAB</p>
+    </div>
 
-  <div class="status-container">
-    <div style="font-size:3rem">🎓</div>
+    <!-- Status card -->
+    <div class="card" [class.card-success]="status === 'success'" [class.card-error]="status === 'error'">
 
-    <ion-spinner *ngIf="status === 'processing'" name="crescent" color="primary" style="width:56px;height:56px"></ion-spinner>
-    <ion-icon *ngIf="status === 'waiting'" name="log-in-outline" class="status-icon" style="color:var(--ion-color-medium)"></ion-icon>
-    <ion-icon *ngIf="status === 'success'" name="checkmark-circle" class="status-icon" color="success"></ion-icon>
-    <ion-icon *ngIf="status === 'error'" name="close-circle" class="status-icon" color="danger"></ion-icon>
+      <div class="icon-area">
+        <ion-spinner *ngIf="status === 'processing'" name="crescent" class="spinner"></ion-spinner>
+        <span *ngIf="status === 'waiting'" class="status-emoji">⏸️</span>
+        <span *ngIf="status === 'success'" class="status-emoji">✅</span>
+        <span *ngIf="status === 'error'" class="status-emoji">❌</span>
+      </div>
 
-    <p class="message">{{ message }}</p>
+      <p class="status-label" [class.text-success]="status === 'success'" [class.text-error]="status === 'error'">
+        {{ message }}
+      </p>
 
-    <p *ngIf="status === 'success'" style="color:var(--ion-color-medium);font-size:.85rem">
-      Cerrando en {{ countdown }}...
-    </p>
+      <p *ngIf="status === 'success'" class="countdown">
+        Cerrando en {{ countdown }}s...
+      </p>
 
-    <ion-note *ngIf="status === 'waiting'" color="medium" style="max-width:280px;display:block;text-align:center;line-height:1.6">
-      Esta app intercepta automáticamente los enlaces <strong>moodlemobile://</strong> de Moodle.
-    </ion-note>
+    </div>
+
+    <!-- Instructions when waiting -->
+    <div *ngIf="status === 'waiting'" class="instructions">
+      <p>Esta app intercepta automáticamente los tokens <code>moodlemobile://</code> de Moodle cuando inicias sesión desde Telegram.</p>
+      <p>No necesitas abrirla manualmente.</p>
+    </div>
+
+    <!-- Footer with version -->
+    <div class="footer">
+      <span>v{{ version }}</span>
+      <span class="sep">·</span>
+      <span class="commit">{{ commit }}</span>
+    </div>
+
   </div>
-
 </ion-content>

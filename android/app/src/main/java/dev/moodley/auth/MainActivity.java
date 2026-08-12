@@ -1,4 +1,4 @@
-package io.ionic.starter;
+package dev.moodley.auth;
 
 import com.getcapacitor.BridgeActivity;
 

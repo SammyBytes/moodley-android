@@ -1,7 +1,8 @@
 import { Component, OnInit, NgZone } from '@angular/core';
 import { App } from '@capacitor/app';
+import { environment } from '../../environments/environment';
 
-const WORKER_CALLBACK_URL = 'https://moodley-nightly.samuelbeato7.workers.dev/mobile-sso/callback';
+const WORKER_CALLBACK_URL = `${environment.workerUrl}/mobile-sso/callback`;
 
 type Status = 'waiting' | 'processing' | 'success' | 'error';
 
@@ -13,8 +14,10 @@ type Status = 'waiting' | 'processing' | 'success' | 'error';
 })
 export class HomePage implements OnInit {
   status: Status = 'waiting';
-  message = 'Abre un enlace de Moodle para iniciar sesión.';
+  message = 'Listo para recibir tokens de Moodle.';
   countdown = 0;
+  readonly version = environment.appVersion;
+  readonly commit = environment.appCommit;
 
   constructor(private zone: NgZone) {}
 
@@ -46,12 +49,12 @@ export class HomePage implements OnInit {
 
     if (!token) {
       this.status = 'error';
-      this.message = '❌ No se encontró el token en el enlace.';
+      this.message = 'No se encontró el token en el enlace.';
       return;
     }
 
     this.status = 'processing';
-    this.message = '⏳ Conectando con Moodley...';
+    this.message = 'Conectando con Moodley...';
 
     try {
       const response = await fetch(WORKER_CALLBACK_URL, {
@@ -67,23 +70,25 @@ export class HomePage implements OnInit {
       }
 
       this.status = 'success';
-      this.message = '✅ ¡Sesión iniciada!';
+      this.message = '¡Sesión iniciada! Vuelve a Telegram.';
       this.startCountdown();
     } catch (err: unknown) {
       this.status = 'error';
       const msg = err instanceof Error ? err.message : String(err);
-      this.message = `❌ Error: ${msg}`;
+      this.message = msg;
     }
   }
 
   private startCountdown() {
     this.countdown = 3;
     const timer = setInterval(() => {
-      this.countdown--;
-      if (this.countdown <= 0) {
-        clearInterval(timer);
-        App.minimizeApp(); // send to background instead of killing it
-      }
+      this.zone.run(() => {
+        this.countdown--;
+        if (this.countdown <= 0) {
+          clearInterval(timer);
+          App.minimizeApp();
+        }
+      });
     }, 1000);
   }
 }
