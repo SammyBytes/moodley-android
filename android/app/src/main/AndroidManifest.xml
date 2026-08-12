@@ -22,8 +22,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Handle moodley:// deep links from Moodle SSO -->
-            <intent-filter android:autoVerify="false">
+            <!-- Handle moodley:// deep links from Moodle SSO (Android 12+ compatible) -->
+            <!-- android:exported="true" is required for Android 12+ when intent-filter is present -->
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
