@@ -125,3 +125,33 @@ h1 {
 
 .sep { opacity: 0.5; }
 .commit { font-family: monospace; }
+
+.error-help {
+  margin-top: 1rem;
+  text-align: left;
+  width: 100%;
+}
+
+.help-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fbbf24;
+  margin: 0 0 0.5rem;
+}
+
+.help-steps {
+  font-size: 0.82rem;
+  color: #cbd5e1;
+  padding-left: 1.2rem;
+  margin: 0 0 1rem;
+  line-height: 1.7;
+
+  strong { color: #f1f5f9; }
+  em { color: #94a3b8; }
+  code {
+    background: rgba(255,255,255,0.1);
+    padding: 0 4px;
+    border-radius: 3px;
+    font-family: monospace;
+  }
+}

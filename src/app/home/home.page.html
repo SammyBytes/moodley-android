@@ -22,6 +22,34 @@
         {{ message }}
       </p>
 
+      <!-- Token invalid: show fix instructions -->
+      <div *ngIf="status === 'error' && errorCode === 'token_invalid_on_moodle'" class="error-help">
+        <p class="help-title">¿Cómo solucionarlo?</p>
+        <ol class="help-steps">
+          <li>Abre <strong>UNAB EduVirtual</strong> en el navegador</li>
+          <li>Ve a <strong>Perfil → Preferencias → Gestionar tokens</strong></li>
+          <li>Elimina el token de <em>Moodle Mobile Web Services</em></li>
+          <li>Vuelve a Telegram y usa <code>/login</code> de nuevo</li>
+        </ol>
+        <ion-button expand="block" fill="outline" color="warning" (click)="openReauth()">
+          🔑 Gestionar tokens de Moodle
+        </ion-button>
+      </div>
+
+      <!-- Token invalid: show fix instructions -->
+      <div *ngIf="status === 'error' && errorCode === 'token_invalid_on_moodle'" class="error-help">
+        <p class="help-title">¿Cómo solucionarlo?</p>
+        <ol class="help-steps">
+          <li>Abre <strong>UNAB EduVirtual</strong> en el navegador</li>
+          <li>Ve a <strong>Perfil → Preferencias → Gestionar tokens</strong></li>
+          <li>Elimina el token de <em>Moodle Mobile Web Services</em></li>
+          <li>Vuelve a Telegram y usa <code>/login</code> de nuevo</li>
+        </ol>
+        <ion-button expand="block" fill="outline" color="warning" (click)="openManageTokens()">
+          🔑 Gestionar tokens de Moodle
+        </ion-button>
+      </div>
+
       <p *ngIf="status === 'success'" class="countdown">
         Cerrando en {{ countdown }}s...
       </p>
