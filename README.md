@@ -30,8 +30,8 @@ Telegram Mini App
 # 1. Instalar dependencias
 npm install
 
-# 2. Construir (build + sync + APK de debug)
-./build-apk.sh
+# 2. Construir NIGHTLY (build + sync + APK debug)
+./build-apk.sh nightly
 
 # APK quedará en:
 # android/app/build/outputs/apk/debug/app-debug.apk
@@ -40,8 +40,8 @@ npm install
 ### APK de Release (para distribución)
 
 ```bash
-cd android
-./gradlew assembleRelease
+./build-apk.sh production
+# APK: android/app/build/outputs/apk/release/app-release.apk
 # Luego firmar con Android Studio o apksigner
 ```
 
@@ -53,12 +53,19 @@ adb install android/app/build/outputs/apk/debug/app-debug.apk
 
 O transferir el APK al teléfono y abrirlo directamente (requiere "Instalar desde fuentes desconocidas").
 
-## Configuración
+## Configuración de entornos
 
-La URL del Worker está en `src/app/home/home.page.ts`:
+La URL del Worker se define por entorno:
 
 ```typescript
-const WORKER_CALLBACK_URL = 'https://moodley-nightly.samuelbeato7.workers.dev/mobile-sso/callback';
+// src/environments/environment.ts (nightly / development)
+workerUrl: 'https://moodley-nightly.samuelbeato7.workers.dev'
+
+// src/environments/environment.prod.ts (production / release)
+workerUrl: 'https://moodley.samuelbeato7.workers.dev'
 ```
 
-Cambiar a la URL de producción cuando corresponda.
+Android App Links también cambia por tipo de build usando `manifestPlaceholders` en
+`android/app/build.gradle`:
+- `debug`  → `moodley-nightly.samuelbeato7.workers.dev`
+- `release` → `moodley.samuelbeato7.workers.dev`

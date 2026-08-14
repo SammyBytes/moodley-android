@@ -17,7 +17,11 @@ android {
         }
     }
     buildTypes {
+        debug {
+            manifestPlaceholders = [workerHost: "moodley-nightly.samuelbeato7.workers.dev"]
+        }
         release {
+            manifestPlaceholders = [workerHost: "moodley.samuelbeato7.workers.dev"]
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
