@@ -1,0 +1,100 @@
+name: Android Build
+
+on:
+  push:
+    branches: [main, nightly, develop]
+  pull_request:
+    branches: [main, nightly, develop]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Build target"
+        required: false
+        default: "auto"
+        type: choice
+        options:
+          - auto
+          - nightly
+          - production
+
+concurrency:
+  group: android-build-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve build target
+        id: target
+        shell: bash
+        run: |
+          INPUT_TARGET="${{ github.event.inputs.target || 'auto' }}"
+          REF_NAME="${{ github.ref_name }}"
+          if [[ "$INPUT_TARGET" == "nightly" || "$INPUT_TARGET" == "production" ]]; then
+            TARGET="$INPUT_TARGET"
+          elif [[ "$REF_NAME" == "main" ]]; then
+            TARGET="production"
+          else
+            TARGET="nightly"
+          fi
+          echo "target=$TARGET" >> "$GITHUB_OUTPUT"
+          echo "Resolved target: $TARGET"
+
+      - name: Build web app (nightly)
+        if: steps.target.outputs.target == 'nightly'
+        run: npm run build -- --configuration development
+
+      - name: Build web app (production)
+        if: steps.target.outputs.target == 'production'
+        run: npm run build -- --configuration production
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Assemble debug APK (nightly)
+        if: steps.target.outputs.target == 'nightly'
+        run: ./android/gradlew -p android assembleDebug
+
+      - name: Assemble release APK (production)
+        if: steps.target.outputs.target == 'production'
+        run: ./android/gradlew -p android assembleRelease
+
+      - name: Upload debug APK artifact
+        if: steps.target.outputs.target == 'nightly'
+        uses: actions/upload-artifact@v4
+        with:
+          name: moodley-auth-nightly-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+      - name: Upload release APK artifact
+        if: steps.target.outputs.target == 'production'
+        uses: actions/upload-artifact@v4
+        with:
+          name: moodley-auth-production-release-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
