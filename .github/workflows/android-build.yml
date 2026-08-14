@@ -26,6 +26,9 @@ jobs:
     name: Build APK
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -83,19 +86,43 @@ jobs:
         if: steps.target.outputs.target == 'production'
         run: ./android/gradlew -p android assembleRelease
 
-      - name: Upload debug APK artifact
+      - name: Rename APK for release (nightly)
         if: steps.target.outputs.target == 'nightly'
-        uses: actions/upload-artifact@v4
-        with:
-          name: moodley-auth-nightly-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk moodley-nightly.apk
 
-      - name: Upload release APK artifact
+      - name: Rename APK for release (production)
         if: steps.target.outputs.target == 'production'
-        uses: actions/upload-artifact@v4
-        with:
-          name: moodley-auth-production-release-apk
-          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
-          if-no-files-found: error
+        run: cp android/app/build/outputs/apk/release/app-release-unsigned.apk moodley-production.apk
 
+      - name: Get version from build.gradle
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(grep 'versionName' android/app/build.gradle | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Version: $VERSION"
+
+      - name: Create GitHub Release (nightly)
+        if: steps.target.outputs.target == 'nightly' && github.event_name == 'push' && !contains(github.event_name, 'pull_request')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: nightly-${{ github.sha }}
+          name: "Nightly ${{ steps.version.outputs.version }} (${{ github.sha }})"
+          body: |
+            🌙 **Nightly build** — apunta al servidor de pruebas.
+
+            Instala solo si sabes lo que estás haciendo.
+          prerelease: true
+          files: moodley-nightly.apk
+
+      - name: Create GitHub Release (production)
+        if: steps.target.outputs.target == 'production' && github.event_name == 'push' && !contains(github.event_name, 'pull_request')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}-${{ github.sha }}
+          name: "Moodley Auth v${{ steps.version.outputs.version }}"
+          body: |
+            🚀 **Producción** — APK oficial de Moodley Auth.
+
+            Descarga e instala en tu dispositivo Android.
+          files: moodley-production.apk
